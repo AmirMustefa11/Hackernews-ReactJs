@@ -20,23 +20,21 @@ const list = [
 ];
 class App extends Component {
   render() {
-    const helloworld = "Welcome to the road to learn React!";
+    const helloworld = "wWelcome to the road to learn React!";
     return (
       <div className="App">
         <h2>{helloworld}</h2>
-        {list.map(function(item) {
-          return (
-            <div key={item.objectId}>
-              <span>
-                <a href={item.url}></a>
-              </span>
-              <span>{item.author}</span>
-              <span>{item.title}</span>
-              <span>{item.Points}</span>
-              <span>{item.num_comments}</span>
-            </div>
-          );
-        })}
+        {list.map(item => (
+          <div key={item.objectId}>
+            <span>
+              <a href={item.url}></a>
+            </span>
+            <span>{item.author}</span>
+            <span>{item.title}</span>
+            <span>{item.Points}</span>
+            <span>{item.num_comments}</span>
+          </div>
+        ))}
       </div>
     );
   }
