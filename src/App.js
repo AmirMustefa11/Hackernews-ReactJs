@@ -22,7 +22,15 @@ class App extends Component {
   constructor(props) {
     super(props);
     this.state = { list };
+    this.onDismiss = this.onDismiss.bind(this);
   }
+
+  onDismiss(id) {
+    const isNotId = item => item.objectId !== id;
+    const updatedList = this.state.list.filter(isNotId);
+    this.setState({ list: updatedList });
+  }
+
   render() {
     const helloworld = "wWelcome to the road to learn React!";
     return (
@@ -37,6 +45,14 @@ class App extends Component {
             <span>{item.title}</span>
             <span>{item.Points}</span>
             <span>{item.num_comments}</span>
+            <span>
+              <button
+                onClick={() => this.onDismiss(item.objectId)}
+                type="button"
+              >
+                Dismiss
+              </button>
+            </span>
           </div>
         ))}
       </div>
