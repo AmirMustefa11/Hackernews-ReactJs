@@ -21,7 +21,7 @@ const list = [
 class App extends Component {
   constructor(props) {
     super(props);
-    this.state = { list: list };
+    this.state = { list };
   }
   render() {
     const helloworld = "wWelcome to the road to learn React!";
