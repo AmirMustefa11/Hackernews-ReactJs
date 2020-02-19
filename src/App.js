@@ -46,7 +46,11 @@ class App extends Component {
       <div className="App">
         <h2>{helloReact}</h2>
         <form>
-          <input type="text" onChange={this.onSearchChange} />
+          <input
+            type="text"
+            value={searchTerm}
+            onChange={this.onSearchChange}
+          />
         </form>
         {list.filter(isSearched(this.state.searchTerm)).map(item => (
           <div key={item.objectId}>
