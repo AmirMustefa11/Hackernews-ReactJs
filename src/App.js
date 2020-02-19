@@ -41,31 +41,40 @@ class App extends Component {
 
   render() {
     const { list, searchTerm } = this.state;
-    const helloReact = "Welcome to the road to learn React!";
+
     return (
       <div className="App">
-        <h2>{helloReact}</h2>
-        <form>
-          <input
-            type="text"
-            value={searchTerm}
-            onChange={this.onSearchChange}
-          />
-        </form>
-        {list.filter(isSearched(this.state.searchTerm)).map(item => (
+        <Search value={searchTerm} onChange={this.onSearchChange} />
+        <Table list={list} pattern={searchTerm} onDismiss={this.onDismiss} />
+      </div>
+    );
+  }
+}
+class Search extends Component {
+  render() {
+    const { value, onChange } = this.props;
+    return (
+      <form>
+        <input type="text" value={value} onChange={onChange} />
+      </form>
+    );
+  }
+}
+class Table extends Component {
+  render() {
+    const { list, pattern, onDismiss } = this.props;
+    return (
+      <div className="App">
+        {list.filter(isSearched(pattern)).map(item => (
           <div key={item.objectId}>
             <span>
-              <a href={item.url}></a>
+              <a href={item.url}>{item.title}></a>
             </span>
             <span>{item.author}</span>
-            <span>{item.title}</span>
-            <span>{item.Points}</span>
             <span>{item.num_comments}</span>
+            <span>{item.Points}</span>
             <span>
-              <button
-                onClick={() => this.onDismiss(item.objectId)}
-                type="button"
-              >
+              <button onClick={() => onDismiss(item.objectId)} type="button">
                 Dismiss
               </button>
             </span>
