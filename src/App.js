@@ -50,47 +50,41 @@ class App extends Component {
     );
   }
 }
-class Search extends Component {
-  render() {
-    const { value, onChange, children } = this.props;
-    return (
-      <form>
-        {children}
-        <input type="text" value={value} onChange={onChange} />
-      </form>
-    );
-  }
-}
-class Table extends Component {
-  render() {
-    const { list, pattern, onDismiss } = this.props;
-    return (
-      <div className="App">
-        {list.filter(isSearched(pattern)).map(item => (
-          <div key={item.objectId}>
-            <span>
-              <a href={item.url}>{item.title}></a>
-            </span>
-            <span>{item.author}</span>
-            <span>{item.num_comments}</span>
-            <span>{item.Points}</span>
-            <span>
-              <button onClick={() => onDismiss(item.objectId)}>Dismiss</button>
-            </span>
-          </div>
-        ))}
-      </div>
-    );
-  }
-}
-class Button extends Component {
-  render() {
-    const { onClick, className = "", children } = this.props;
-    return (
-      <button onClick={onClick} className={className}>
-        {children}
-      </button>
-    );
-  }
-}
+
+const Search = ({ value, onChange, children }) => {
+  return (
+    <form>
+      {children}
+      <input type="text" value={value} onChange={onChange} />
+    </form>
+  );
+};
+
+const Table = ({ list, pattern, onDismiss }) => {
+  return (
+    <div className="App">
+      {list.filter(isSearched(pattern)).map(item => (
+        <div key={item.objectId}>
+          <span>
+            <a href={item.url}>{item.title}></a>
+          </span>
+          <span>{item.author}</span>
+          <span>{item.num_comments}</span>
+          <span>{item.Points}</span>
+          <span>
+            <button onClick={() => onDismiss(item.objectId)}>Dismiss</button>
+          </span>
+        </div>
+      ))}
+    </div>
+  );
+};
+
+const Button = ({ onClick, className = "", children }) => {
+  return (
+    <button onClick={onClick} className={className}>
+      {children}
+    </button>
+  );
+};
 export default App;
