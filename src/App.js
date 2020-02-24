@@ -1,33 +1,44 @@
 import React, { Component } from "react";
 import "./App.css";
-const list = [
-  {
-    title: "React",
-    url: "https://reactjs.org/",
-    author: "Jordan Walke",
-    num_comments: 3,
-    Points: 4,
-    objectId: 0
-  },
-  {
-    title: "Redux",
-    url: "https://redux.js.org",
-    author: "Dan Abromov, Andrew Clark",
-    num_comments: 5,
-    Points: 3,
-    objectId: 1
-  }
-];
+const DEFAULT_QUERY = "redux";
+const PATH_BASE = "https://hn.algolia.com/api/v1";
+const PATH_SEARCH = "/search";
+const PARAM_SEARCH = "query=";
+const URL = `${PATH_BASE}${PATH_SEARCH}?${PARAM_SEARCH}${DEFAULT_QUERY}`;
 
+const largeColumn = {
+  width: "40"
+};
+const midColumn = { width: "30%" };
+const smallColumn = {
+  width: "10%"
+};
+
+// higher order fuction
 const isSearched = searchTerm => item =>
   item.title.toLowerCase().includes(searchTerm.toLowerCase());
 
 class App extends Component {
   constructor(props) {
     super(props);
-    this.state = { list, searchTerm: "" };
-    this.onDismiss = this.onDismiss.bind(this);
+    this.state = {
+      result: null,
+      searchTerm: DEFAULT_QUERY
+    };
+
+    this.onSearchTopStories = this.onSearchTopStories.bind(this);
     this.onSearchChange = this.onSearchChange.bind(this);
+    this.onDismiss = this.onDismiss.bind(this);
+  }
+  onSearchTopStories(result) {
+    this.setState({ result });
+  }
+  componentDidMount() {
+    const { searchTerm } = this.state;
+    fetch(`${PATH_BASE}${PATH_SEARCH}?${PARAM_SEARCH}${searchTerm}`)
+      .then(response => response.json())
+      .then(result => this.onSearchTopStories(result))
+      .catch(error => error);
   }
 
   onDismiss(id) {
@@ -40,14 +51,21 @@ class App extends Component {
   }
 
   render() {
-    const { list, searchTerm } = this.state;
-
+    const { searchTerm, result } = this.state;
+    console.log(this.state);
+    if (!result) {
+      return null;
+    }
     return (
       <div className="page">
-        <div className="interactions">
+        <div className="interacions">
           <Search value={searchTerm} onChange={this.onSearchChange} />
         </div>
-        <Table list={list} pattern={searchTerm} onDismiss={this.onDismiss} />
+        <Table
+          list={result.hits}
+          pattern={searchTerm}
+          onDismiss={this.onDismiss}
+        />
       </div>
     );
   }
@@ -67,13 +85,13 @@ const Table = ({ list, pattern, onDismiss }) => {
     <div className="table">
       {list.filter(isSearched(pattern)).map(item => (
         <div key={item.objectId} className="table-row">
-          <span style={{ width: "40%" }}>
+          <span style={largeColumn}>
             <a href={item.url}>{item.title}></a>
           </span>
-          <span style={{ width: "30%" }}>{item.author}</span>
-          <span style={{ width: "10%" }}>{item.num_comments}</span>
-          <span style={{ width: "10%" }}>{item.Points}</span>
-          <span style={{ width: "10%" }}>
+          <span style={midColumn}>{item.author}</span>
+          <span style={smallColumn}>{item.num_comments}</span>
+          <span style={smallColumn}>{item.Points}</span>
+          <span style={smallColumn}>
             <button
               onClick={() => onDismiss(item.objectId)}
               className="button-inline"
