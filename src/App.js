@@ -17,7 +17,7 @@ const smallColumn = {
 // higher order fuction
 const isSearched = searchTerm => item =>
   item.title.toLowerCase().includes(searchTerm.toLowerCase());
-
+// the app component
 class App extends Component {
   constructor(props) {
     super(props);
@@ -33,6 +33,7 @@ class App extends Component {
   onSearchTopStories(result) {
     this.setState({ result });
   }
+  // this is a component lifecylce method for fething data.
   componentDidMount() {
     const { searchTerm } = this.state;
     fetch(`${PATH_BASE}${PATH_SEARCH}?${PARAM_SEARCH}${searchTerm}`)
@@ -43,8 +44,10 @@ class App extends Component {
 
   onDismiss(id) {
     const isNotId = item => item.objectId !== id;
-    const updatedList = this.state.list.filter(isNotId);
-    this.setState({ list: updatedList });
+    const updatedHits = this.state.result.hits.filter(isNotId);
+    this.setState({
+      result: { ...this.state.result, hits: updatedHits }
+    });
   }
   onSearchChange(event) {
     this.setState({ searchTerm: event.target.value });
@@ -61,11 +64,13 @@ class App extends Component {
         <div className="interacions">
           <Search value={searchTerm} onChange={this.onSearchChange} />
         </div>
-        <Table
-          list={result.hits}
-          pattern={searchTerm}
-          onDismiss={this.onDismiss}
-        />
+        {result && (
+          <Table
+            list={result.hits}
+            pattern={searchTerm}
+            onDismiss={this.onDismiss}
+          />
+        )}
       </div>
     );
   }
