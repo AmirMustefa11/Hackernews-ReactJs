@@ -27,26 +27,47 @@ class App extends Component {
   constructor(props) {
     super(props);
     this.state = {
-      result: null,
-      searchTerm: DEFAULT_QUERY
+      results: null,
+      searchKey: "",
+      searchTerm: DEFAULT_QUERY,
+      error: null
     };
-
+    this.needsToSearchTopStories = this.needsToSearchTopStories.bind(this);
     this.setSearchTopStories = this.setSearchTopStories.bind(this);
     this.fetchSearchTopStories = this.fetchSearchTopStories.bind(this);
     this.onSearchChange = this.onSearchChange.bind(this);
     this.onSearchSubmit = this.onSearchSubmit.bind(this);
     this.onDismiss = this.onDismiss.bind(this);
   }
+  needsToSearchTopStories(searchTerm) {
+    return !this.state.results[searchTerm];
+  }
 
+  // We want to concatenate the old and new list of hits from the local state and new result object,
+  // so we’ll adjust its functionality to add new data rather than override it.
   setSearchTopStories(result) {
+    //to cache from the client side First, get the hits and page from the result.
     const { hits, page } = result;
 
-    const oldHits = page !== 0 ? this.state.result.hits : [];
+    //to store each result by search key
+    const { searchKey, results } = this.state;
 
+    //Second, you have to check if there are already old hits. When the page is 0, it is a new search request
+    // from componentDidMount() or onSearchSubmit() .The hits are empty.But when you click the “More”
+    // button to fetch paginated data the page isn’t 0. The old hits are already stored in your state and thus
+    // can be used.
+    const oldHits =
+      results && results[searchKey] ? results[searchKey].hits : [];
+    //     Third, you are not suppposed  to override the old hits. You can merge old and new hits from the recent API
+    // request, which can be done with a JavaScript ES6 array spread operator.
     const updatedHits = [...oldHits, ...hits];
 
+    // Fourth, you set the merged hits and page in the local component state.
     this.setState({
-      result: { hits: updatedHits, page }
+      results: {
+        ...results,
+        [searchKey]: { hits: updatedHits, page }
+      }
     });
   }
   fetchSearchTopStories(searchTerm, page = 0) {
@@ -55,12 +76,13 @@ class App extends Component {
     )
       .then(response => response.json())
       .then(result => this.setSearchTopStories(result))
-      .catch(error => error);
+      .catch(error => this.setState({ error }));
   }
 
   // this is a component lifecylce method for fething data.
   componentDidMount() {
     const { searchTerm } = this.state;
+    this.setState({ searchKey: searchTerm });
     this.fetchSearchTopStories(searchTerm);
   }
 
@@ -70,21 +92,42 @@ class App extends Component {
 
   onSearchSubmit(event) {
     const { searchTerm } = this.state;
-    this.fetchSearchTopStories(searchTerm);
+    this.setState({ searchKey: searchTerm });
+
+    if (this.needsToSearchTopStories(searchTerm)) {
+      this.fetchSearchTopStories(searchTerm);
+    }
     event.preventDefault();
   }
 
   onDismiss(id) {
+    const { searchKey, results } = this.state;
+    const { hits, page } = results[searchKey];
+
     const isNotId = item => item.objectID !== id;
-    const updatedHits = this.state.result.hits.filter(isNotId);
+    const updatedHits = hits.filter(isNotId);
+
     this.setState({
-      result: { ...this.state.result, hits: updatedHits }
+      results: {
+        ...results,
+        [searchKey]: { hits: updatedHits, page }
+      }
     });
   }
 
   render() {
-    const { searchTerm, result } = this.state;
-    const page = (result && result.page) || 0;
+    const { searchTerm, results, searchKey, error } = this.state;
+
+    //make sure to default to page 0 when there is no result.and also
+    // Remember, the render() method is called before the data is fetched asynchronously in the componentDidMount() lifecycle method.
+    const page =
+      (results && results[searchKey] && results[searchKey].page) || 0;
+    const list =
+      (results && results[searchKey] && results[searchKey].hits) || [];
+
+    if (error) {
+      return <p>Something went wrong</p>;
+    }
 
     return (
       <div className="page">
@@ -97,8 +140,7 @@ class App extends Component {
             Search
           </Search>
         </div>
-
-        {result && <Table list={result.hits} onDismiss={this.onDismiss} />}
+        <Table list={list} onDismiss={this.onDismiss} />
         <div className="interactions">
           <Button
             onClick={() => this.fetchSearchTopStories(searchTerm, page + 1)}
