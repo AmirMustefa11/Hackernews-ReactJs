@@ -1,5 +1,6 @@
 import React, { Component } from "react";
 import "./App.css";
+import axios from "axios";
 const DEFAULT_QUERY = "redux";
 const DEFAULT_HPP = "100";
 
@@ -71,11 +72,10 @@ class App extends Component {
     });
   }
   fetchSearchTopStories(searchTerm, page = 0) {
-    fetch(
+    axios(
       `${PATH_BASE}${PATH_SEARCH}?${PARAM_SEARCH}${searchTerm}&${PARAM_PAGE}${page}&${PARAM_HPP}${DEFAULT_HPP}`
     )
-      .then(response => response.json())
-      .then(result => this.setSearchTopStories(result))
+      .then(result => this.setSearchTopStories(result.data))
       .catch(error => this.setState({ error }));
   }
 
@@ -125,10 +125,6 @@ class App extends Component {
     const list =
       (results && results[searchKey] && results[searchKey].hits) || [];
 
-    if (error) {
-      return <p>Something went wrong</p>;
-    }
-
     return (
       <div className="page">
         <div className="interactions">
@@ -140,7 +136,14 @@ class App extends Component {
             Search
           </Search>
         </div>
-        <Table list={list} onDismiss={this.onDismiss} />
+        {error ? (
+          <div className="interactions">
+            {" "}
+            <p>Something went wrong.</p>
+          </div>
+        ) : (
+          <Table list={list} onDismiss={this.onDismiss} />
+        )}
         <div className="interactions">
           <Button
             onClick={() => this.fetchSearchTopStories(searchTerm, page + 1)}
