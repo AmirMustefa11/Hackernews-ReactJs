@@ -155,14 +155,14 @@ class App extends Component {
     );
   }
 }
-
+// Search  Componenet
 const Search = ({ value, onChange, onSubmit, children }) => (
   <form onSubmit={onSubmit}>
     <input type="text" value={value} onChange={onChange} />
     <button type="submit">{children}</button>
   </form>
 );
-
+// Table Component
 const Table = ({ list, onDismiss }) => (
   <div className="table">
     {list.map(item => (
@@ -185,10 +185,11 @@ const Table = ({ list, onDismiss }) => (
     ))}
   </div>
 );
-
+// Button component
 const Button = ({ onClick, className = "", children }) => (
   <button onClick={onClick} className={className} type="button">
     {children}
   </button>
 );
 export default App;
+export { Button, Search, Table };
