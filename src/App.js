@@ -22,8 +22,6 @@ const smallColumn = {
   width: "10%"
 };
 
-// higher order fuction
-
 // the app component
 class App extends Component {
   constructor(props) {
@@ -32,7 +30,8 @@ class App extends Component {
       results: null,
       searchKey: "",
       searchTerm: DEFAULT_QUERY,
-      error: null
+      error: null,
+      isLoading: false
     };
     this.needsToSearchTopStories = this.needsToSearchTopStories.bind(this);
     this.setSearchTopStories = this.setSearchTopStories.bind(this);
@@ -41,6 +40,7 @@ class App extends Component {
     this.onSearchSubmit = this.onSearchSubmit.bind(this);
     this.onDismiss = this.onDismiss.bind(this);
   }
+
   needsToSearchTopStories(searchTerm) {
     return !this.state.results[searchTerm];
   }
@@ -69,10 +69,12 @@ class App extends Component {
       results: {
         ...results,
         [searchKey]: { hits: updatedHits, page }
-      }
+      },
+      isLoading: false
     });
   }
   fetchSearchTopStories(searchTerm, page = 0) {
+    this.setState({ isLoading: true });
     axios(
       `${PATH_BASE}${PATH_SEARCH}?${PARAM_SEARCH}${searchTerm}&${PARAM_PAGE}${page}&${PARAM_HPP}${DEFAULT_HPP}`
     )
@@ -117,7 +119,7 @@ class App extends Component {
   }
 
   render() {
-    const { searchTerm, results, searchKey, error } = this.state;
+    const { searchTerm, results, searchKey, error, isLoading } = this.state;
 
     //make sure to default to page 0 when there is no result.and also
     // Remember, the render() method is called before the data is fetched asynchronously in the componentDidMount() lifecycle method.
@@ -139,60 +141,58 @@ class App extends Component {
         </div>
         {error ? (
           <div className="interactions">
-            {" "}
             <p>Something went wrong.</p>
           </div>
         ) : (
           <Table list={list} onDismiss={this.onDismiss} />
         )}
         <div className="interactions">
-          <Button
-            onClick={() => this.fetchSearchTopStories(searchTerm, page + 1)}
-          >
-            More
-          </Button>
+          {isLoading ? (
+            <Loading />
+          ) : (
+            <Button
+              onClick={() => this.fetchSearchTopStories(searchTerm, page + 1)}
+            >
+              More
+            </Button>
+          )}
         </div>
       </div>
     );
   }
 }
-// Search  Componenet
-// const Search = ({ value, onChange, onSubmit, children }) => {
-//   let input;
-//   return (
-//     <form onSubmit={onSubmit}>
-//       <input
-//         type="text"
-//         value={value}
-//         onChange={onChange}
-//         ref={el => (this.input = el)}
-//       />
-//       <button type="submit">{children}</button>
-//     </form>
-//   );
-// };
+//Search  Componenet
+const Search = ({ value, onChange, onSubmit, children }) => {
+  return (
+    <form onSubmit={onSubmit}>
+      <input type="text" value={value} onChange={onChange} />
+      <button type="submit">{children}</button>
+    </form>
+  );
+};
 
-class Search extends Component {
-  componentDidMount() {
-    if (this.input) {
-      this.input.focus();
-    }
-  }
-  render() {
-    const { value, onChange, onSubmit, children } = this.props;
-    return (
-      <form onSubmit={onsubmit}>
-        <input
-          type="text"
-          value={value}
-          onChange={onChange}
-          ref={el => (this.input = el)}
-        ></input>
-        <button type="submit">{children}</button>
-      </form>
-    );
-  }
-}
+// class Search extends Component {
+//   componentDidMount() {
+//     if (this.input) {
+//       this.input.focus();
+//     }
+//   }
+//   render() {
+//     const { value, onChange, onSubmit, children } = this.props;
+//     return (
+//       <form onSubmit={onsubmit}>
+//         <input
+//           type="text"
+//           value={value}
+//           onChange={onChange}
+//           ref={el => (this.input = el)}
+//         ></input>
+//         <button type="submit">{children}</button>
+//       </form>
+//     );
+//   }
+// }
+
 // Table Component
 const Table = ({ list, onDismiss }) => (
   <div className="table">
@@ -223,33 +223,34 @@ const Button = ({ onClick, className, children }) => (
   </button>
 );
 
-Table.propTypes = {
-  list: PropTypes.arrayOf(
-    PropTypes.shape({
-      objectID: PropTypes.string.isRequired,
-      author: PropTypes.string,
-      url: PropTypes.string,
-      num_comments: PropTypes.number,
-      points: PropTypes.number
-    })
-  ).isRequired,
-  onDismiss: PropTypes.func
-};
-Button.defaultProps = {
-  className: ""
-};
+// Table.propTypes = {
+//   list: PropTypes.arrayOf(
+//     PropTypes.shape({
+//       objectID: PropTypes.string.isRequired,
+//       author: PropTypes.string,
+//       url: PropTypes.string,
+//       num_comments: PropTypes.number,
+//       points: PropTypes.number
+//     })
+//   ).isRequired,
+//   onDismiss: PropTypes.func
+// };
+// Button.defaultProps = {
+//   className: ""
+// };
 
-Button.propTypes = {
-  onClick: PropTypes.func,
-  className: PropTypes.string,
-  children: PropTypes.node
-};
-Search.propTypes = {
-  onChange: PropTypes.func,
-  onSubmit: PropTypes.func,
-  children: PropTypes.node.isRequired,
-  value: PropTypes.string
-};
+// Button.propTypes = {
+//   onClick: PropTypes.func,
+//   className: PropTypes.string,
+//   children: PropTypes.node
+// };
+// Search.propTypes = {
+//   onChange: PropTypes.func,
+//   onSubmit: PropTypes.func,
+//   children: PropTypes.node.isRequired,
+//   value: PropTypes.string
+// };
+const Loading = () => <div>Loading ...</div>;
 
 export default App;
 export { Button, Search, Table };
