@@ -1,7 +1,7 @@
 import React, { Component } from "react";
 import "./App.css";
 import axios from "axios";
-import PropTypes from "prop-types";
+//import PropTypes from "prop-types";
 import { sortBy } from "lodash";
 import classNames from "classnames";
 const DEFAULT_QUERY = "redux";
@@ -42,8 +42,7 @@ class App extends Component {
       searchTerm: DEFAULT_QUERY,
       error: null,
       isLoading: false,
-      sortKey: "NONE",
-      isSortReverse: false
+      
     };
     this.needsToSearchTopStories = this.needsToSearchTopStories.bind(this);
     this.setSearchTopStories = this.setSearchTopStories.bind(this);
@@ -51,7 +50,7 @@ class App extends Component {
     this.onSearchChange = this.onSearchChange.bind(this);
     this.onSearchSubmit = this.onSearchSubmit.bind(this);
     this.onDismiss = this.onDismiss.bind(this);
-    this.onSort = this.onSort.bind(this);
+     
   }
 
   needsToSearchTopStories(searchTerm) {
@@ -172,9 +171,6 @@ class App extends Component {
         ) : (
           <Table
             list={list}
-            sortKey={sortKey}
-            onSort={this.onSort}
-            isSortReverse={isSortReverse}
             onDismiss={this.onDismiss}
           />
         )}
@@ -202,81 +198,90 @@ const Search = ({ value, onChange, onSubmit, children }) => (
   </form>
 );
 
-// using the ref attribute to get a node element from the DOM, added input focus
-// class Search extends Component {
-//   componentDidMount() {
-//     if (this.input) {
-//       this.input.focus();
-//     }
-//   }
-//   render() {
-//     const { value, onChange, onSubmit, children } = this.props;
-//     return (
-//       <form onSubmit={onsubmit}>
-//         <input
-//           type="text"
-//           value={value}
-//           onChange={onChange}
-//           ref={el => (this.input = el)}
-//         ></input>
-//         <button type="submit">{children}</button>
-//       </form>
-//     );
-//   }
-// }
 
-//Table Component
-const Table = ({ list, sortKey, isSortReverse, onSort, onDismiss }) => {
-  const sortedList = SORTS[sortKey](list);
-  const reverseSortedList = isSortReverse ? sortedList.reverse() : sortedList;
 
-  return (
-    <div className="table">
-      <div className="table-header">
-        <span style={{ width: "40%" }}>
-          <Sort sortKey={"TITLE"} onSort={onSort} activeSortKey={sortKey}>
-            Title
-          </Sort>
-        </span>
-        <span style={{ width: "30%" }}>
-          <Sort sortKey={"AUTHOR"} onSort={onSort} activeSortKey={sortKey}>
-            Author
-          </Sort>
-        </span>
-        <span style={{ width: "10%" }}>
-          <Sort sortKey={"COMMENTS"} onSort={onSort} activeSortKey={sortKey}>
-            Comments
-          </Sort>
-        </span>
-        <span style={{ width: "10%" }}>
-          <Sort sortKey={"POINTS"} onSort={onSort} activeSortKey={sortKey}>
-            Points
-          </Sort>
-        </span>
-        <span style={{ width: "10%" }}>Archieve</span>
-      </div>
 
-      {reverseSortedList.map(item => (
-        <div key={item.objectID} className="table-row">
-          <span style={largeColumn}>
-            <a href={item.url}>{item.title}</a>
-          </span>
-          <span style={midColumn}>{item.author}</span>
-          <span style={smallColumn}>{item.num_comments}</span>
-          <span style={smallColumn}>{item.points}</span>
-          <span style={smallColumn}>
-            <Button
-              onClick={() => onDismiss(item.objectID)}
-              className="button-inline"
-            >
-              Dismiss
-            </Button>
-          </span>
-        </div>
-      ))}
-    </div>
-  );
-};
+// // Table with class component
+
+class Table extends Component{
+  constructor(props){
+    super(props);
+    this.state = {
+      sortKey : 'NONE',
+      isSortReverse : false,
+    }
+    this.onSort = this.onSort.bind(this);
+
+  }
+  onSort(sortKey){
+    const isSortReverse = this.state.sortKey === sortKey && !this.state.isSortReverse;
+    this.setState({sortKey,isSortReverse});
+
+  }
+  render(){
+    const {
+      list,
+      onDismiss
+    } = this.props;
+
+    const {
+          sortKey,
+          isSortReverse
+    } = this.state;
+    const sortedList = SORTS[sortKey](list);
+    const reverseSortedList = isSortReverse ? sortedList.reverse() : sortedList;
+    return (
+          <div className="table">
+            <div className="table-header">
+              <span style={{ width: "40%" }}>
+                <Sort sortKey={"TITLE"}
+                 onSort={this.onSort} 
+                 activeSortKey={sortKey}>
+                  Title
+                </Sort>
+              </span>
+              <span style={{ width: "30%" }}>
+                <Sort sortKey={"AUTHOR"}
+                 onSort={this.onSort} 
+                 activeSortKey={sortKey}>
+                  Author
+                </Sort>
+              </span>
+              <span style={{ width: "10%" }}>
+                <Sort sortKey={"COMMENTS"} onSort={this.onSort} activeSortKey={sortKey}>
+                  Comments
+                </Sort>
+              </span>
+              <span style={{ width: "10%" }}>
+                <Sort sortKey={"POINTS"} onSort={this.onSort} activeSortKey={sortKey}>
+                  Points
+                </Sort>
+              </span>
+              <span style={{ width: "10%" }}>Archieve</span>
+            </div>
+      
+            {reverseSortedList.map(item => (
+              <div key={item.objectID} className="table-row">
+                <span style={largeColumn}>
+                  <a href={item.url}>{item.title}</a>
+                </span>
+                <span style={midColumn}>{item.author}</span>
+                <span style={smallColumn}>{item.num_comments}</span>
+                <span style={smallColumn}>{item.points}</span>
+                <span style={smallColumn}>
+                  <Button
+                    onClick={() => onDismiss(item.objectID)}
+                    className="button-inline"
+                  >
+                    Dismiss
+                  </Button>
+                </span>
+              </div>
+            ))}
+          </div>
+        );
+  }
+}
 
 // Button component
 const Button = ({ onClick, className, children }) => (
@@ -327,3 +332,4 @@ const Loading = () => <div>Loading ...</div>;
 
 export default App;
 export { Button, Search, Table };
+
