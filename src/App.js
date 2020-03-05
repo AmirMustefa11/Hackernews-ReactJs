@@ -1,7 +1,6 @@
 import React, { Component } from "react";
 import "./App.css";
 import axios from "axios";
-//import PropTypes from "prop-types";
 import { sortBy } from "lodash";
 import classNames from "classnames";
 const DEFAULT_QUERY = "redux";
@@ -31,6 +30,21 @@ const SORTS = {
   COMMENTS: list => sortBy(list, "num_comments").reverse(),
   POINTS: list => sortBy(list, "points").reverse()
 };
+
+const updatedSearchTopStoriesState =(hits,page) =>(prevState) =>{
+  const {searchKey,results} = prevState;
+  const oldHits = results && results[searchKey]? results[searchKey].hits : [];
+  const updatedHits = [...oldHits,...hits];
+  return {
+    results: {
+      ...results,
+      [searchKey]: { hits: updatedHits, page }
+    },
+    isLoading: false
+
+  }
+
+}
 
 // the app component
 class App extends Component {
@@ -69,26 +83,11 @@ class App extends Component {
     const { hits, page } = result;
 
     //to store each result by search key
-    const { searchKey, results } = this.state;
+    
+    this.setState(
+        updatedSearchTopStoriesState(hits,page)
+    )
 
-    //Second, you have to check if there are already old hits. When the page is 0, it is a new search request
-    // from componentDidMount() or onSearchSubmit() .The hits are empty.But when you click the “More”
-    // button to fetch paginated data the page isn’t 0. The old hits are already stored in your state and thus
-    // can be used.
-    const oldHits =
-      results && results[searchKey] ? results[searchKey].hits : [];
-    //     Third, you are not suppposed  to override the old hits. You can merge old and new hits from the recent API
-    // request, which can be done with a JavaScript ES6 array spread operator.
-    const updatedHits = [...oldHits, ...hits];
-
-    // Fourth, you set the merged hits and page in the local component state.
-    this.setState({
-      results: {
-        ...results,
-        [searchKey]: { hits: updatedHits, page }
-      },
-      isLoading: false
-    });
   }
   fetchSearchTopStories(searchTerm, page = 0) {
     this.setState({ isLoading: true });
@@ -301,33 +300,7 @@ const Sort = ({ sortKey, activeSortKey, onSort, children }) => {
   );
 };
 
-// Table.propTypes = {
-//   list: PropTypes.arrayOf(
-//     PropTypes.shape({
-//       objectID: PropTypes.string.isRequired,
-//       author: PropTypes.string,
-//       url: PropTypes.string,
-//       num_comments: PropTypes.number,
-//       points: PropTypes.number
-//     })
-//   ).isRequired,
-//   onDismiss: PropTypes.func
-// };
-// Button.defaultProps = {
-//   className: ""
-// };
 
-// Button.propTypes = {
-//   onClick: PropTypes.func,
-//   className: PropTypes.string,
-//   children: PropTypes.node
-// };
-// Search.propTypes = {
-//   onChange: PropTypes.func,
-//   onSubmit: PropTypes.func,
-//   children: PropTypes.node.isRequired,
-//   value: PropTypes.string
-// };
 const Loading = () => <div>Loading ...</div>;
 
 export default App;
